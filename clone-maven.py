@@ -22,20 +22,22 @@ if __name__ == "__main__":
                     prog='Maven Cloner',
                     description='Clones FRC Maven Repositories',
                     epilog='Text at the bottom of help')
+    parser.add_argument('directory', default="./maven",help="Directory to download the libraries to. Defaults to './maven'")
     parser.add_argument('-c', '--cache', action='store_true', dest="cache", help="If set, the tool will not download files if the repo was last updated within the last X hours. X is set by --cache-timeout, defaults to 12 hours")
     parser.add_argument('--cache-timeout', dest="cache_timeout", type=int, default=12, help="Cache timeout. If --cache is set, repos will not download if they haven't been updated within the last X hours. Defaults to 12 hours")
     # parser.add_argument('--pre-release', action='store_true', dest="pre_release", help="Whether to download pre-release files")
 
     args = parser.parse_args()
+    root_dir = args.directory.rstrip("/")
     _dir = Path.cwd().joinpath("vendordeps")
     CACHE_TIME = datetime.datetime.now() - datetime.timedelta(hours=args.cache_timeout)
     for file in _dir.glob("*.json"):
-        print(file.stem)
         with file.open(mode="r", encoding="utf-8") as f:
             vendor: dict = json.load(f)
             mavenURLs: list[str] = vendor.get("mavenUrls", [])
             if len(mavenURLs) == 0:
                 continue
+            print(f"========== {vendor.get('name', '')} ==========")
             mavenURL = mavenURLs[0].rstrip("/")
             javaDeps = vendor.get("javaDependencies", [])
             jniDeps = vendor.get("jniDependencies", [])
@@ -43,11 +45,12 @@ if __name__ == "__main__":
                 groupId: str = dep.get("groupId","")
                 artifactId: str = dep.get("artifactId","")
                 groupPath = groupId.replace(".","/")
+                artifactDir = f"{root_dir}/{groupPath}/{artifactId}"
                 meta = requests.get(f"{mavenURL}/{groupPath}/{artifactId}/maven-metadata.xml")
                 metaDict = xmltodict.parse(meta.text.lstrip())
                 # print(meta.text)
                 lastUpdated = metaDict.get("metadata",{}).get("versioning",{}).get("lastUpdated","")
-                if args.cache and lastUpdated != "": 
+                if args.cache and os.path.exists(artifactDir) and lastUpdated != "": 
                     updated = datetime.datetime.strptime(lastUpdated, '%Y%m%d%H%M%S')
                     if updated < CACHE_TIME:
                         continue
@@ -59,8 +62,9 @@ if __name__ == "__main__":
                 except Exception:
                     versions = []
                 for version, ext in itertools.product(versions, ['pom','jar']):
-                    dir = f"maven/{groupPath}/{artifactId}/{version}"
+                    dir = f"{artifactDir}/{version}"
                     os.makedirs(dir, exist_ok=True)
+                    print(f"Downloading {artifactId}-{version}")
                     with open(f"{dir}/{artifactId}-{version}.{ext}", mode="wb") as f:
                         jar = requests.get(f"{mavenURL}/{groupPath}/{artifactId}/{version}/{artifactId}-{version}.{ext}", allow_redirects=True)
                         if jar.ok:
@@ -70,10 +74,11 @@ if __name__ == "__main__":
                 artifactId: str = dep.get("artifactId","")
                 validPlatforms: str = dep.get("validPlatforms",[])
                 groupPath = groupId.replace(".","/")
+                artifactDir = f"{root_dir}/{groupPath}/{artifactId}"
                 meta = requests.get(f"{mavenURL}/{groupPath}/{artifactId}/maven-metadata.xml")
                 metaDict = xmltodict.parse(meta.text.lstrip())
                 lastUpdated = metaDict.get("metadata",{}).get("versioning",{}).get("lastUpdated","")
-                if args.cache and lastUpdated != "": 
+                if args.cache and os.path.exists(artifactDir) and lastUpdated != "": 
                     updated = datetime.datetime.strptime(lastUpdated, '%Y%m%d%H%M%S')
                     if updated < CACHE_TIME:
                         continue
@@ -85,8 +90,9 @@ if __name__ == "__main__":
                 except Exception:
                     versions = []
                 for version in versions:
-                    dir = f"maven/{groupPath}/{artifactId}/{version}"
-                    os.makedirs(dir, exist_ok=True)
+                    dir = f"{artifactDir}/{version}"
+                    os.makedirs(dir, exist_ok=True)                            
+                    print(f"Downloading {artifactId}-{version}")
                     with open(f"{dir}/{artifactId}-{version}.pom", mode="wb") as f:
                         zip = requests.get(f"{mavenURL}/{groupPath}/{artifactId}/{version}/{artifactId}-{version}.pom", allow_redirects=True)
                         if zip.ok:

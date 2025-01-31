@@ -80,6 +80,41 @@ jobs:
       with:
         name: choreo
         path: ${{ env.ARTIFACT_DIR }}
+  download-direct-maven:
+    name: Download files directly from Maven Servers
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Project
+      uses: actions/checkout@v4
+    - name: Restore cached libraries
+      id: cache-maven-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          ${{ env.ARTIFACT_DIR }}
+        key: maven-libraries
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13' 
+    - name: Install Python Requirements
+      run: pip install -r requirements.txt
+    - name: Copy Maven files
+      run: |-
+        python clone-maveny.py -c
+    - name: Cache libraries
+      id: cache-maven-save
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ${{ env.ARTIFACT_DIR }}
+        key: ${{ steps.cache-maven-restore.outputs.cache-primary-key }}
+    # This grabs the WPILib docker container
+    - uses: actions/upload-artifact@v4
+      with:
+        name: other-maven
+        path: ${{ env.ARTIFACT_DIR }}
   publish-pages:
     name: Upload to Github Pages
     # The type of runner that the job will run on
