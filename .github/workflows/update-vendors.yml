@@ -102,7 +102,7 @@ jobs:
       run: pip install -r requirements.txt
     - name: Copy Maven files
       run: |-
-        python clone-maveny.py -c
+        python clone-maveny.py ${{ env.ARTIFACT_DIR }} --cache
     - name: Cache libraries
       id: cache-maven-save
       uses: actions/cache/save@v4
@@ -123,6 +123,7 @@ jobs:
       - download-maplesim
       - download-pathplanner
       - download-choreo
+      - download-direct-maven
     if: success() && github.ref_name == github.event.repository.default_branch
     environment:
       name: github-pages
@@ -147,6 +148,10 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: choreo
+        path: ${{ env.ARTIFACT_DIR }}
+    - uses: actions/download-artifact@v4
+      with:
+        name: other-maven
         path: ${{ env.ARTIFACT_DIR }}
     - name: Setup Pages
       uses: actions/configure-pages@v5

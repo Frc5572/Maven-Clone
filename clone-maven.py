@@ -50,10 +50,9 @@ if __name__ == "__main__":
                 metaDict = xmltodict.parse(meta.text.lstrip())
                 # print(meta.text)
                 lastUpdated = metaDict.get("metadata",{}).get("versioning",{}).get("lastUpdated","")
-                if args.cache and os.path.exists(artifactDir) and lastUpdated != "": 
+                updated = None
+                if lastUpdated != "": 
                     updated = datetime.datetime.strptime(lastUpdated, '%Y%m%d%H%M%S')
-                    if updated < CACHE_TIME:
-                        continue
                 try:
                     versionsRaw = metaDict.get("metadata",{}).get("versioning",{}).get("versions").get("version")
                     if isinstance(versionsRaw, str):
@@ -63,8 +62,10 @@ if __name__ == "__main__":
                     versions = []
                 for version, ext in itertools.product(versions, ['pom','jar']):
                     dir = f"{artifactDir}/{version}"
+                    if args.cache and os.path.exists(dir) and updated < CACHE_TIME:
+                        continue
                     os.makedirs(dir, exist_ok=True)
-                    print(f"Downloading {artifactId}-{version}")
+                    print(f"Downloading {artifactId} ({version})")
                     with open(f"{dir}/{artifactId}-{version}.{ext}", mode="wb") as f:
                         jar = requests.get(f"{mavenURL}/{groupPath}/{artifactId}/{version}/{artifactId}-{version}.{ext}", allow_redirects=True)
                         if jar.ok:
@@ -78,10 +79,9 @@ if __name__ == "__main__":
                 meta = requests.get(f"{mavenURL}/{groupPath}/{artifactId}/maven-metadata.xml")
                 metaDict = xmltodict.parse(meta.text.lstrip())
                 lastUpdated = metaDict.get("metadata",{}).get("versioning",{}).get("lastUpdated","")
-                if args.cache and os.path.exists(artifactDir) and lastUpdated != "": 
+                updated = None
+                if lastUpdated != "": 
                     updated = datetime.datetime.strptime(lastUpdated, '%Y%m%d%H%M%S')
-                    if updated < CACHE_TIME:
-                        continue
                 try:
                     versionsRaw = metaDict.get("metadata",{}).get("versioning",{}).get("versions").get("version")
                     if isinstance(versionsRaw, str):
@@ -91,8 +91,10 @@ if __name__ == "__main__":
                     versions = []
                 for version in versions:
                     dir = f"{artifactDir}/{version}"
+                    if args.cache and os.path.exists(dir) and updated < CACHE_TIME:
+                        continue
                     os.makedirs(dir, exist_ok=True)                            
-                    print(f"Downloading {artifactId}-{version}")
+                    print(f"Downloading {artifactId} ({version})")
                     with open(f"{dir}/{artifactId}-{version}.pom", mode="wb") as f:
                         zip = requests.get(f"{mavenURL}/{groupPath}/{artifactId}/{version}/{artifactId}-{version}.pom", allow_redirects=True)
                         if zip.ok:
