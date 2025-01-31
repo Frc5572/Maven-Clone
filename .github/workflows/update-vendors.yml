@@ -102,7 +102,7 @@ jobs:
       run: pip install -r requirements.txt
     - name: Copy Maven files
       run: |-
-        python clone-maveny.py ${{ env.ARTIFACT_DIR }} --cache
+        python clone-maven.py ${{ env.ARTIFACT_DIR }} --cache
     - name: Cache libraries
       id: cache-maven-save
       uses: actions/cache/save@v4
