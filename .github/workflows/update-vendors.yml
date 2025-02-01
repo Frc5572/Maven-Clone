@@ -4,6 +4,7 @@ name: Maven Repo CLone
 
 # Controls when the action will run.
 on:
+  push:
   schedule:
     - cron: "0 7,19 * * *" # This is in UTC time which makes the actual run 1AM and 1PM CST
   # Allows you to run this workflow manually from the Actions tab
@@ -16,78 +17,118 @@ env:
 jobs:
   download-maplesim:
     name: Download MapleSim
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Project
       uses: actions/checkout@v4
-    - name: Checkout Maplesim Repo
-      uses: actions/checkout@v4
+    - name: Download MapleSim
+      uses: ./.github/actions/download-git
       with:
         repository: Shenzhen-Robotics-Alliance/maple-sim
         ref: gh-pages
-        path: maven-temp
-    - name: Copy Maven files
-      run: |-
-        mkdir $ARTIFACT_DIR
-        cp -R maven-temp/vendordep/repos/releases/* $ARTIFACT_DIR/
-    # This grabs the WPILib docker container
-    - uses: actions/upload-artifact@v4
-      with:
-        name: maplesim
-        path: ${{ env.ARTIFACT_DIR }}
+        deps_path: vendordep/repos/releases
+        artifact_directory: ${{ env.ARTIFACT_DIR }}
+        artifact_key: maplesim
   download-pathplanner:
     name: Download PathPlanner
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Project
       uses: actions/checkout@v4
-    - name: Checkout PathPlanner Repo
-      uses: actions/checkout@v4
+    - name: Download PathPlanner
+      uses: ./.github/actions/download-git
       with:
         repository: 3015RangerRobotics/3015RangerRobotics.github.io
         ref: main
-        path: maven-temp
-    - name: Copy Maven files
-      run: |-
-        mkdir $ARTIFACT_DIR
-        cp -R maven-temp/pathplannerlib/repo/* $ARTIFACT_DIR/
-    # This grabs the WPILib docker container
-    - uses: actions/upload-artifact@v4
-      with:
-        name: pathplanner
-        path: ${{ env.ARTIFACT_DIR }}
+        deps_path: pathplannerlib/repo
+        artifact_directory: ${{ env.ARTIFACT_DIR }}
+        artifact_key: pathplanner
   download-choreo:
     name: Download Choreo
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Project
       uses: actions/checkout@v4
-    - name: Checkout Choreo Repo
-      uses: actions/checkout@v4
+    - name: Download PathPlanner
+      uses: ./.github/actions/download-git
       with:
         repository: SleipnirGroup/ChoreoLib
         ref: main
-        path: maven-temp
-    - name: Copy Maven files
-      run: |-
-        mkdir $ARTIFACT_DIR
-        cp -R maven-temp/dep/* $ARTIFACT_DIR/
-    # This grabs the WPILib docker container
-    - uses: actions/upload-artifact@v4
-      with:
-        name: choreo
-        path: ${{ env.ARTIFACT_DIR }}
+        deps_path: dep
+        artifact_directory: ${{ env.ARTIFACT_DIR }}
+        artifact_key: choreo
+  download-redux:
+    name: Download ReduxLib
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
+      - name: Download ReduxLib
+        uses: ./.github/actions/download-maven
+        with:
+          dep_uuid: 151ecca8-670b-4026-8160-cdd2679ef2bd
+          artifact_directory: ${{ env.ARTIFACT_DIR }}
+          artifact_key: redux
+  download-photon:
+    name: Download PhotonLib
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
+      - name: Download PhotonLib
+        uses: ./.github/actions/download-maven
+        with:
+          dep_uuid: 515fe07e-bfc6-11fa-b3de-0242ac130004
+          artifact_directory: ${{ env.ARTIFACT_DIR }}
+          artifact_key: photon
+  download-rev:
+    name: Download REV
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
+      - name: Download REV
+        uses: ./.github/actions/download-maven
+        with:
+          dep_uuid: 3f48eb8c-50fe-43a6-9cb7-44c86353c4cb
+          artifact_directory: ${{ env.ARTIFACT_DIR }}
+          artifact_key: rev
+  download-studica:
+    name: Download Studica
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
+      - name: Download Studica
+        uses: ./.github/actions/download-maven
+        with:
+          dep_uuid: cb311d09-36e9-4143-a032-55bb2b94443b
+          artifact_directory: ${{ env.ARTIFACT_DIR }}
+          artifact_key: studica
+  download-ctre:
+    name: Download CTRE
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
+      - name: Download CTRE
+        uses: ./.github/actions/download-maven
+        with:
+          dep_uuid: e995de00-2c64-4df5-8831-c1441420ff19
+          artifact_directory: ${{ env.ARTIFACT_DIR }}
+          artifact_key: ctre
   publish-pages:
     name: Upload to Github Pages
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     needs:
       - download-maplesim
       - download-pathplanner
       - download-choreo
+      - download-redux
+      - download-photon
+      - download-rev
+      - download-studica
+      - download-ctre
     if: success() && github.ref_name == github.event.repository.default_branch
     environment:
       name: github-pages
@@ -99,7 +140,6 @@ jobs:
     concurrency:
       group: "pages"
       cancel-in-progress: true
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - uses: actions/download-artifact@v4
       with:
@@ -112,6 +152,26 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: choreo
+        path: ${{ env.ARTIFACT_DIR }}
+    - uses: actions/download-artifact@v4
+      with:
+        name: redux
+        path: ${{ env.ARTIFACT_DIR }}
+    - uses: actions/download-artifact@v4
+      with:
+        name: photon
+        path: ${{ env.ARTIFACT_DIR }}
+    - uses: actions/download-artifact@v4
+      with:
+        name: rev
+        path: ${{ env.ARTIFACT_DIR }}
+    - uses: actions/download-artifact@v4
+      with:
+        name: studica
+        path: ${{ env.ARTIFACT_DIR }}
+    - uses: actions/download-artifact@v4
+      with:
+        name: ctre
         path: ${{ env.ARTIFACT_DIR }}
     - name: Setup Pages
       uses: actions/configure-pages@v5

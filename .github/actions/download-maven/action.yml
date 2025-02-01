@@ -1,0 +1,38 @@
+---
+name: Download dependency files from Maven server
+description: 'This action will download all the Jar, Pom, Zip... files from a maven server'
+inputs:
+  dep_uuid:
+    description: The UUID of the dependency to download
+    required: true
+    default: ""
+  artifact_key:
+    description: The key for the artifact upload
+    required: true
+    default: ""
+  artifact_directory:
+    description: The directory for the artifacts to upload
+    required: true
+    default: ""
+# outputs:
+#   random-number:
+#     description: "Random number"
+#     value: ${{ steps.random-number-generator.outputs.random-number }}
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13' 
+    - name: Install Python Requirements
+      shell: bash
+      run: pip install -r requirements.txt
+    - name: Copy Maven files
+      shell: bash
+      run: |-
+        python clone-maven.py -d ${{ inputs.artifact_directory }} ${{ inputs.dep_uuid }}
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact_key }}
+        path: ${{ inputs.artifact_directory }}
