@@ -79,6 +79,8 @@ jobs:
     name: Download ReduxLib
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
       - uses: ./.github/actions/download-maven
         with:
           dep_uuid: 151ecca8-670b-4026-8160-cdd2679ef2bd
@@ -88,6 +90,8 @@ jobs:
     name: Download PhotonLib
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
       - uses: ./.github/actions/download-maven
         with:
           dep_uuid: 515fe07e-bfc6-11fa-b3de-0242ac130004
@@ -97,6 +101,8 @@ jobs:
     name: Download REV
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
       - uses: ./.github/actions/download-maven
         with:
           dep_uuid: 3f48eb8c-50fe-43a6-9cb7-44c86353c4cb
@@ -106,6 +112,8 @@ jobs:
     name: Download Studica
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
       - uses: ./.github/actions/download-maven
         with:
           dep_uuid: cb311d09-36e9-4143-a032-55bb2b94443b
@@ -115,6 +123,8 @@ jobs:
     name: Download CTRE
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
       - uses: ./.github/actions/download-maven
         with:
           dep_uuid: e995de00-2c64-4df5-8831-c1441420ff19
