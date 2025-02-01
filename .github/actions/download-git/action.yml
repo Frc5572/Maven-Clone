@@ -42,7 +42,7 @@ runs:
       shell: bash
       run: |-
         mkdir ${{ inputs.artifact_directory }}
-        cp -R maven-temp/${{ input.deps_path }}/* ${{ inputs.artifact_directory }}/
+        cp -R maven-temp/${{ inputs.deps_path }}/* ${{ inputs.artifact_directory }}/
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.artifact_key }}
