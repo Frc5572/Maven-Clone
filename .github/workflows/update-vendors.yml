@@ -16,7 +16,6 @@ env:
 jobs:
   download-maplesim:
     name: Download MapleSim
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Project
@@ -31,14 +30,12 @@ jobs:
       run: |-
         mkdir $ARTIFACT_DIR
         cp -R maven-temp/vendordep/repos/releases/* $ARTIFACT_DIR/
-    # This grabs the WPILib docker container
     - uses: actions/upload-artifact@v4
       with:
         name: maplesim
         path: ${{ env.ARTIFACT_DIR }}
   download-pathplanner:
     name: Download PathPlanner
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Project
@@ -53,14 +50,12 @@ jobs:
       run: |-
         mkdir $ARTIFACT_DIR
         cp -R maven-temp/pathplannerlib/repo/* $ARTIFACT_DIR/
-    # This grabs the WPILib docker container
     - uses: actions/upload-artifact@v4
       with:
         name: pathplanner
         path: ${{ env.ARTIFACT_DIR }}
   download-choreo:
     name: Download Choreo
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Project
@@ -75,25 +70,16 @@ jobs:
       run: |-
         mkdir $ARTIFACT_DIR
         cp -R maven-temp/dep/* $ARTIFACT_DIR/
-    # This grabs the WPILib docker container
     - uses: actions/upload-artifact@v4
       with:
         name: choreo
         path: ${{ env.ARTIFACT_DIR }}
-  download-direct-maven:
-    name: Download files directly from Maven Servers
-    # The type of runner that the job will run on
+  download-redux:
+    name: Download ReduxLib
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Project
       uses: actions/checkout@v4
-    - name: Restore cached libraries
-      id: cache-maven-restore
-      uses: actions/cache/restore@v4
-      with:
-        path: |
-          ${{ env.ARTIFACT_DIR }}
-        key: maven-libraries
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
@@ -102,18 +88,86 @@ jobs:
       run: pip install -r requirements.txt
     - name: Copy Maven files
       run: |-
-        python clone-maven.py ${{ env.ARTIFACT_DIR }} --cache
-    - name: Cache libraries
-      id: cache-maven-save
-      uses: actions/cache/save@v4
-      with:
-        path: |
-          ${{ env.ARTIFACT_DIR }}
-        key: ${{ steps.cache-maven-restore.outputs.cache-primary-key }}
-    # This grabs the WPILib docker container
+        python clone-maven.py -d ${{ env.ARTIFACT_DIR }} 151ecca8-670b-4026-8160-cdd2679ef2bd
     - uses: actions/upload-artifact@v4
       with:
-        name: other-maven
+        name: redux
+        path: ${{ env.ARTIFACT_DIR }}
+  download-photon:
+    name: Download PhotonLib
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Project
+      uses: actions/checkout@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13' 
+    - name: Install Python Requirements
+      run: pip install -r requirements.txt
+    - name: Copy Maven files
+      run: |-
+        python clone-maven.py -d ${{ env.ARTIFACT_DIR }} 515fe07e-bfc6-11fa-b3de-0242ac130004
+    - uses: actions/upload-artifact@v4
+      with:
+        name: photon
+        path: ${{ env.ARTIFACT_DIR }}
+  download-rev:
+    name: Download REV
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Project
+      uses: actions/checkout@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13' 
+    - name: Install Python Requirements
+      run: pip install -r requirements.txt
+    - name: Copy Maven files
+      run: |-
+        python clone-maven.py -d ${{ env.ARTIFACT_DIR }} 3f48eb8c-50fe-43a6-9cb7-44c86353c4cb
+    - uses: actions/upload-artifact@v4
+      with:
+        name: rev
+        path: ${{ env.ARTIFACT_DIR }}
+  download-studica:
+    name: Download Studica
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Project
+      uses: actions/checkout@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13' 
+    - name: Install Python Requirements
+      run: pip install -r requirements.txt
+    - name: Copy Maven files
+      run: |-
+        python clone-maven.py -d ${{ env.ARTIFACT_DIR }} cb311d09-36e9-4143-a032-55bb2b94443b
+    - uses: actions/upload-artifact@v4
+      with:
+        name: studica
+        path: ${{ env.ARTIFACT_DIR }}
+  download-ctre:
+    name: Download CTRE
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Project
+      uses: actions/checkout@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13' 
+    - name: Install Python Requirements
+      run: pip install -r requirements.txt
+    - name: Copy Maven files
+      run: |-
+        python clone-maven.py -d ${{ env.ARTIFACT_DIR }} e995de00-2c64-4df5-8831-c1441420ff19
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ctre
         path: ${{ env.ARTIFACT_DIR }}
   publish-pages:
     name: Upload to Github Pages
@@ -123,7 +177,11 @@ jobs:
       - download-maplesim
       - download-pathplanner
       - download-choreo
-      - download-direct-maven
+      - download-redux
+      - download-photon
+      - download-rev
+      - download-studica
+      - download-ctre
     if: success() && github.ref_name == github.event.repository.default_branch
     environment:
       name: github-pages
@@ -151,7 +209,23 @@ jobs:
         path: ${{ env.ARTIFACT_DIR }}
     - uses: actions/download-artifact@v4
       with:
-        name: other-maven
+        name: redux
+        path: ${{ env.ARTIFACT_DIR }}
+    - uses: actions/download-artifact@v4
+      with:
+        name: photon
+        path: ${{ env.ARTIFACT_DIR }}
+    - uses: actions/download-artifact@v4
+      with:
+        name: rev
+        path: ${{ env.ARTIFACT_DIR }}
+    - uses: actions/download-artifact@v4
+      with:
+        name: studica
+        path: ${{ env.ARTIFACT_DIR }}
+    - uses: actions/download-artifact@v4
+      with:
+        name: ctre
         path: ${{ env.ARTIFACT_DIR }}
     - name: Setup Pages
       uses: actions/configure-pages@v5
