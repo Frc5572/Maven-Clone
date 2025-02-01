@@ -4,6 +4,7 @@ import datetime
 import os
 from packaging.version import parse
 import argparse
+import itertools
 
 YEAR = datetime.datetime.now().year
 YEAR_1 = YEAR + 1
@@ -12,6 +13,7 @@ LAST_YEAR = datetime.datetime.now().month < 2
 VENDOR_DEP_MARKETPLACE_URL = (
     "https://frcmaven.wpi.edu/artifactory/vendordeps/vendordep-marketplace"
 )
+HASH_ARR = ["", "md5", "sha1", "sha256", "sha512"]
 
 
 def loadFileFromUrl(url: str) -> list | dict:
@@ -90,18 +92,20 @@ if __name__ == "__main__":
                 groupId: str = dep.get("groupId", "")
                 artifactId: str = dep.get("artifactId", "")
                 groupPath = groupId.replace(".", "/")
-                artifactDir = f"{root_dir}/{groupPath}/{artifactId}"
                 meta = requests.get(
                     f"{mavenURL}/{groupPath}/{artifactId}/maven-metadata.xml"
                 )
                 print(f"Downloading {artifactId} ({version})")
-                for ext in ["pom", "jar"]:
-                    dir = f"{artifactDir}/{version}"
-                    os.makedirs(dir, exist_ok=True)
-                    with open(f"{dir}/{artifactId}-{version}.{ext}", mode="wb") as f:
+                os.makedirs(
+                    f"{root_dir}/{groupPath}/{artifactId}/{version}", exist_ok=True
+                )
+                for ext, hash in itertools.product(["pom", "jar"], HASH_ARR):
+                    file_path = f"{groupPath}/{artifactId}/{version}/{artifactId}-{version}.{ext}"
+                    if hash != "":
+                        file_path = f"{file_path}.{hash}"
+                    with open(f"{root_dir}/{file_path}", mode="wb") as f:
                         jar = requests.get(
-                            f"{mavenURL}/{groupPath}/{artifactId}/{version}/{artifactId}-{version}.{ext}",
-                            allow_redirects=True,
+                            f"{mavenURL}/{file_path}", allow_redirects=True
                         )
                         if jar.ok:
                             f.write(jar.content)
@@ -115,23 +119,27 @@ if __name__ == "__main__":
                 meta = requests.get(
                     f"{mavenURL}/{groupPath}/{artifactId}/maven-metadata.xml"
                 )
-                dir = f"{artifactDir}/{version}"
-                os.makedirs(dir, exist_ok=True)
                 print(f"Downloading {artifactId} ({version})")
-                with open(f"{dir}/{artifactId}-{version}.pom", mode="wb") as f:
-                    zip = requests.get(
-                        f"{mavenURL}/{groupPath}/{artifactId}/{version}/{artifactId}-{version}.pom",
-                        allow_redirects=True,
-                    )
-                    if zip.ok:
-                        f.write(zip.content)
-                for platform in validPlatforms:
-                    with open(
-                        f"{dir}/{artifactId}-{version}-{platform}.zip", mode="wb"
-                    ) as f:
+                os.makedirs(
+                    f"{root_dir}/{groupPath}/{artifactId}/{version}", exist_ok=True
+                )
+                for hash in HASH_ARR:
+                    file_path = f"{groupPath}/{artifactId}/{version}/{artifactId}-{version}.pom"
+                    if hash != "":
+                        file_path = f"{file_path}.{hash}"
+                    with open(f"{root_dir}/{file_path}", mode="wb") as f:
                         zip = requests.get(
-                            f"{mavenURL}/{groupPath}/{artifactId}/{version}/{artifactId}-{version}-{platform}.zip",
-                            allow_redirects=True,
+                            f"{mavenURL}/{file_path}", allow_redirects=True
+                        )
+                        if zip.ok:
+                            f.write(zip.content)
+                for platform, hash in itertools.product(validPlatforms, HASH_ARR):
+                    file_path = f"{groupPath}/{artifactId}/{version}/{artifactId}-{version}-{platform}.zip"
+                    if hash != "":
+                        file_path = f"{file_path}.{hash}"
+                    with open(f"{root_dir}/{file_path}", mode="wb") as f:
+                        zip = requests.get(
+                            f"{mavenURL}/{file_path}", allow_redirects=True
                         )
                         if zip.ok:
                             f.write(zip.content)
