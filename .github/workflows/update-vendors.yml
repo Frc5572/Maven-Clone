@@ -21,60 +21,42 @@ jobs:
     steps:
     - name: Checkout Project
       uses: actions/checkout@v4
-    - name: Checkout Maplesim Repo
-      uses: actions/checkout@v4
+    - name: Download MapleSim
+      uses: ./.github/actions/download-git
       with:
         repository: Shenzhen-Robotics-Alliance/maple-sim
         ref: gh-pages
-        path: maven-temp
-    - name: Copy Maven files
-      run: |-
-        mkdir $ARTIFACT_DIR
-        cp -R maven-temp/vendordep/repos/releases/* $ARTIFACT_DIR/
-    - uses: actions/upload-artifact@v4
-      with:
-        name: maplesim
-        path: ${{ env.ARTIFACT_DIR }}
+        deps_path: vendordep/repos/releases
+        artifact_directory: ${{ env.ARTIFACT_DIR }}
+        artifact_key: maplesim
   download-pathplanner:
     name: Download PathPlanner
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Project
       uses: actions/checkout@v4
-    - name: Checkout PathPlanner Repo
-      uses: actions/checkout@v4
+    - name: Download PathPlanner
+      uses: ./.github/actions/download-git
       with:
         repository: 3015RangerRobotics/3015RangerRobotics.github.io
         ref: main
-        path: maven-temp
-    - name: Copy Maven files
-      run: |-
-        mkdir $ARTIFACT_DIR
-        cp -R maven-temp/pathplannerlib/repo/* $ARTIFACT_DIR/
-    - uses: actions/upload-artifact@v4
-      with:
-        name: pathplanner
-        path: ${{ env.ARTIFACT_DIR }}
+        deps_path: pathplannerlib/repo
+        artifact_directory: ${{ env.ARTIFACT_DIR }}
+        artifact_key: pathplanner
   download-choreo:
     name: Download Choreo
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Project
       uses: actions/checkout@v4
-    - name: Checkout Choreo Repo
-      uses: actions/checkout@v4
+    - name: Download PathPlanner
+      uses: ./.github/actions/download-git
       with:
         repository: SleipnirGroup/ChoreoLib
         ref: main
-        path: maven-temp
-    - name: Copy Maven files
-      run: |-
-        mkdir $ARTIFACT_DIR
-        cp -R maven-temp/dep/* $ARTIFACT_DIR/
-    - uses: actions/upload-artifact@v4
-      with:
-        name: choreo
-        path: ${{ env.ARTIFACT_DIR }}
+        deps_path: dep
+        artifact_directory: ${{ env.ARTIFACT_DIR }}
+        artifact_key: choreo
   download-redux:
     name: Download ReduxLib
     runs-on: ubuntu-latest

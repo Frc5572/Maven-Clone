@@ -1,0 +1,49 @@
+---
+name: Download dependency files from Maven server
+description: 'This action will download all the Jar, Pom, Zip... files from a maven server'
+inputs:
+  repository:
+    description: The GitHub repository to clone
+    required: true
+    default: ""
+  ref:
+    description: The git ref (SHA, branch, tag..) to use
+    required: true
+    default: ""
+  deps_path:
+    description: |-
+      The path where the depencies are located to be copied.
+      This should be the root of the group ID.
+      Do not include starting or trailing slashes.
+    required: true
+    default: ""
+  artifact_key:
+    description: The key for the artifact upload
+    required: true
+    default: ""
+  artifact_directory:
+    description: The directory for the artifacts to upload
+    required: true
+    default: ""
+# outputs:
+#   random-number:
+#     description: "Random number"
+#     value: ${{ steps.random-number-generator.outputs.random-number }}
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.repository }}
+        ref: ${{ inputs.ref }}
+        path: maven-temp
+    - name: Copy Maven files
+      shell: bash
+      run: |-
+        mkdir ${{ inputs.artifact_directory }}
+        cp -R maven-temp/${{ input.deps_path }}/* ${{ inputs.artifact_directory }}/
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact_key }}
+        path: ${{ inputs.artifact_directory }}
