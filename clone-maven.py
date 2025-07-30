@@ -53,8 +53,16 @@ if __name__ == "__main__":
         default="./maven",
         help="Directory to download the libraries to. Defaults to './maven'",
     )
+    parser.add_argument(
+        "-k",
+        "--ignore-tls",
+        choices=["true", "false"],
+        default="false",
+        help="Ignore TLS",
+    )
     args = parser.parse_args()
     root_dir = args.directory.rstrip("/")
+    verify_tls = not (args.ignore_tls == "true")
     years = [YEAR]
     if LAST_YEAR:
         years.append(YEAR - 1)
@@ -93,7 +101,7 @@ if __name__ == "__main__":
                 artifactId: str = dep.get("artifactId", "")
                 groupPath = groupId.replace(".", "/")
                 meta = requests.get(
-                    f"{mavenURL}/{groupPath}/{artifactId}/maven-metadata.xml"
+                    f"{mavenURL}/{groupPath}/{artifactId}/maven-metadata.xml", verify=verify_tls
                 )
                 print(f"Downloading {artifactId} ({version})")
                 os.makedirs(
@@ -105,7 +113,7 @@ if __name__ == "__main__":
                         file_path = f"{file_path}.{hash}"
                     with open(f"{root_dir}/{file_path}", mode="wb") as f:
                         jar = requests.get(
-                            f"{mavenURL}/{file_path}", allow_redirects=True
+                            f"{mavenURL}/{file_path}", allow_redirects=True, verify=verify_tls
                         )
                         if jar.ok:
                             f.write(jar.content)
@@ -117,7 +125,7 @@ if __name__ == "__main__":
                 groupPath = groupId.replace(".", "/")
                 artifactDir = f"{root_dir}/{groupPath}/{artifactId}"
                 meta = requests.get(
-                    f"{mavenURL}/{groupPath}/{artifactId}/maven-metadata.xml"
+                    f"{mavenURL}/{groupPath}/{artifactId}/maven-metadata.xml", verify=verify_tls
                 )
                 print(f"Downloading {artifactId} ({version})")
                 os.makedirs(
@@ -129,7 +137,7 @@ if __name__ == "__main__":
                         file_path = f"{file_path}.{hash}"
                     with open(f"{root_dir}/{file_path}", mode="wb") as f:
                         zip = requests.get(
-                            f"{mavenURL}/{file_path}", allow_redirects=True
+                            f"{mavenURL}/{file_path}", allow_redirects=True, verify=verify_tls
                         )
                         if zip.ok:
                             f.write(zip.content)
@@ -139,7 +147,7 @@ if __name__ == "__main__":
                         file_path = f"{file_path}.{hash}"
                     with open(f"{root_dir}/{file_path}", mode="wb") as f:
                         zip = requests.get(
-                            f"{mavenURL}/{file_path}", allow_redirects=True
+                            f"{mavenURL}/{file_path}", allow_redirects=True, verify=verify_tls
                         )
                         if zip.ok:
                             f.write(zip.content)
