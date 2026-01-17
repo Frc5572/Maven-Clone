@@ -5,6 +5,8 @@ import os
 from packaging.version import parse
 import argparse
 import itertools
+from requests_ratelimiter import LimiterSession
+from time import time
 
 YEAR = datetime.datetime.now().year
 YEAR_1 = YEAR + 1
@@ -70,6 +72,8 @@ if __name__ == "__main__":
     if PRE_RELEASE:
         years.append(f"{YEAR_1}beta")
     run_once = True
+
+    session = LimiterSession(per_second=5)
     for year in years:
         manifestURL = f"{VENDOR_DEP_MARKETPLACE_URL}/{year}.json"
         onlineDeps = loadFileFromUrl(manifestURL)
@@ -100,7 +104,7 @@ if __name__ == "__main__":
                 groupId: str = dep.get("groupId", "")
                 artifactId: str = dep.get("artifactId", "")
                 groupPath = groupId.replace(".", "/")
-                meta = requests.get(
+                meta = session.get(
                     f"{mavenURL}/{groupPath}/{artifactId}/maven-metadata.xml", verify=verify_tls
                 )
                 print(f"Downloading {artifactId} ({version})")
@@ -112,7 +116,7 @@ if __name__ == "__main__":
                     if hash != "":
                         file_path = f"{file_path}.{hash}"
                     with open(f"{root_dir}/{file_path}", mode="wb") as f:
-                        jar = requests.get(
+                        jar = session.get(
                             f"{mavenURL}/{file_path}", allow_redirects=True, verify=verify_tls
                         )
                         if jar.ok:
@@ -124,7 +128,7 @@ if __name__ == "__main__":
                 validPlatforms: str = dep.get("validPlatforms", [])
                 groupPath = groupId.replace(".", "/")
                 artifactDir = f"{root_dir}/{groupPath}/{artifactId}"
-                meta = requests.get(
+                meta = session.get(
                     f"{mavenURL}/{groupPath}/{artifactId}/maven-metadata.xml", verify=verify_tls
                 )
                 print(f"Downloading {artifactId} ({version})")
@@ -136,7 +140,7 @@ if __name__ == "__main__":
                     if hash != "":
                         file_path = f"{file_path}.{hash}"
                     with open(f"{root_dir}/{file_path}", mode="wb") as f:
-                        zip = requests.get(
+                        zip = session.get(
                             f"{mavenURL}/{file_path}", allow_redirects=True, verify=verify_tls
                         )
                         if zip.ok:
@@ -146,7 +150,7 @@ if __name__ == "__main__":
                     if hash != "":
                         file_path = f"{file_path}.{hash}"
                     with open(f"{root_dir}/{file_path}", mode="wb") as f:
-                        zip = requests.get(
+                        zip = session.get(
                             f"{mavenURL}/{file_path}", allow_redirects=True, verify=verify_tls
                         )
                         if zip.ok:
