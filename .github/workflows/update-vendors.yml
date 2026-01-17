@@ -49,7 +49,7 @@ jobs:
     steps:
       - name: Checkout Project
         uses: actions/checkout@v6
-      - name: Download ReduxLib
+      - name: Download Choreo
         uses: ./.github/actions/download-maven
         with:
           dep_uuid: b5e23f0a-dac9-4ad2-8dd6-02767c520aca
