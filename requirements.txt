@@ -2,3 +2,4 @@ requests
 xmltodict
 packaging
 certifi
+requests-ratelimiter
