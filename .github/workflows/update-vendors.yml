@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Project
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Download MapleSim
       uses: ./.github/actions/download-git
       with:
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Project
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Download PathPlanner
       uses: ./.github/actions/download-git
       with:
@@ -47,22 +47,20 @@ jobs:
     name: Download Choreo
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Project
-      uses: actions/checkout@v4
-    - name: Download PathPlanner
-      uses: ./.github/actions/download-git
-      with:
-        repository: SleipnirGroup/ChoreoLib
-        ref: main
-        deps_path: dep
-        artifact_directory: ${{ env.ARTIFACT_DIR }}
-        artifact_key: choreo
+      - name: Checkout Project
+        uses: actions/checkout@v6
+      - name: Download ReduxLib
+        uses: ./.github/actions/download-maven
+        with:
+          dep_uuid: b5e23f0a-dac9-4ad2-8dd6-02767c520aca
+          artifact_directory: ${{ env.ARTIFACT_DIR }}
+          artifact_key: choreo
   download-redux:
     name: Download ReduxLib
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Download ReduxLib
         uses: ./.github/actions/download-maven
         with:
@@ -74,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Download PhotonLib
         uses: ./.github/actions/download-maven
         with:
@@ -86,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Download REV
         uses: ./.github/actions/download-maven
         with:
@@ -98,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Download Studica
         uses: ./.github/actions/download-maven
         with:
@@ -111,7 +109,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Download CTRE
         uses: ./.github/actions/download-maven
         with:
@@ -142,35 +140,35 @@ jobs:
       group: "pages"
       cancel-in-progress: true
     steps:
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v7
       with:
         name: maplesim
         path: ${{ env.ARTIFACT_DIR }}
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v7
       with:
         name: pathplanner
         path: ${{ env.ARTIFACT_DIR }}
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v7
       with:
         name: choreo
         path: ${{ env.ARTIFACT_DIR }}
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v7
       with:
         name: redux
         path: ${{ env.ARTIFACT_DIR }}
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v7
       with:
         name: photon
         path: ${{ env.ARTIFACT_DIR }}
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v7
       with:
         name: rev
         path: ${{ env.ARTIFACT_DIR }}
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v7
       with:
         name: studica
         path: ${{ env.ARTIFACT_DIR }}
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v7
       with:
         name: ctre
         path: ${{ env.ARTIFACT_DIR }}
